@@ -113,18 +113,18 @@ void processGamepad(ControllerPtr ctl) {
     }
 
     // intake
-    if (ctl->l1()) {
+    if (ctl->r1()) {
         intake.write(180);
-    } else if (ctl->l2()) {
+    } else if (ctl->r2()) {
         intake.write(0);
     } else {
         intake.write(90);
     }
 
     // lift
-    if (ctl->r1()) {
+    if (ctl->l1()) {
         liftPosition += 20;
-    } else if (ctl->r2()) {
+    } else if (ctl->l2()) {
         liftPosition -= 20;
     }
 
@@ -138,7 +138,7 @@ void processGamepad(ControllerPtr ctl) {
   
     // drive
     int x = ctl->axisRX();
-    int y = ctl->axisRY();
+    int y = ctl->axisY();
 
     if (abs(x) < 100) {
         x = 0;
@@ -150,11 +150,10 @@ void processGamepad(ControllerPtr ctl) {
     x = map(x, 512, -512, -90, 90);
     y = map(y, 512, -512, 0, 180);
 
-    
-
-    Serial.print(y-x);
-    Serial.print("    ");
-    Serial.println(y+x);
+    Serial.print("X:");
+    Serial.print(x);
+    Serial.print("    Y:");
+    Serial.println(y);
     
     // Serial.println(liftPosition);
 
@@ -203,7 +202,7 @@ void setup() {
     winch.attach(winchPin, 1000, 2000);
 
 
-    Serial.begin(115200);
+    Serial.begin(9600);
     Serial.printf("Firmware: %s\n", BP32.firmwareVersion());
     const uint8_t* addr = BP32.localBdAddress();
     Serial.printf("BD Addr: %2X:%2X:%2X:%2X:%2X:%2X\n", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
