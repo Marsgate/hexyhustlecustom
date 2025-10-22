@@ -1,26 +1,19 @@
 #include <Bluepad32.h>
-#include <ESP32Servo.h>
 #include <Preferences.h>
-
-int leftDrivePin = 13;
-int rightDrivePin = 14;
-int liftPin = 34;
-int intakePin = 27;
-int winchPin = 26;
-
-Servo leftDrive;
-Servo rightDrive;
-Servo lift;
-Servo intake;
-Servo winch;
-
-int liftPosition = 1500;
-const int liftUpperBound = 2300;
-const int liftLowerBound = 650;
+#include "pbr.h"
 
 ControllerPtr myControllers[BP32_MAX_GAMEPADS];
-
 Preferences preferences;
+
+// motors
+Motor leftDrive;
+Motor rightDrive;
+Motor intake;
+Motor hang;
+
+// servos
+ServoMotor descore;
+ServoMotor flipper;
 
 // This callback gets called any time a new gamepad is connected.
 // Up to 4 gamepads can be connected at the same time.
@@ -42,7 +35,7 @@ void onConnectedController(ControllerPtr ctl) {
     if (!foundEmptySlot) {
         Serial.println("CALLBACK: Controller connected, but could not found empty slot");
     }
-    digitalWrite(2, LOW);
+    digitalWrite(ONBOARD_LED, LOW);
 }
 
 void onDisconnectedController(ControllerPtr ctl) {
@@ -61,7 +54,7 @@ void onDisconnectedController(ControllerPtr ctl) {
         Serial.println("CALLBACK: Controller disconnected, but not found in myControllers");
     }
 
-    digitalWrite(2, HIGH);
+    digitalWrite(ONBOARD_LED, HIGH);
 }
 
 void dumpGamepad(ControllerPtr ctl) {
@@ -109,62 +102,62 @@ void processGamepad(ControllerPtr ctl) {
         colorIdx++;
     }
 
-    // winch
-    if (ctl->x()) {
-        winch.write(180);
-    } else if (ctl->y()) {
-        winch.write(0);
-    } else {
-        winch.write(90);
-    }
+    // // winch
+    // if (ctl->x()) {
+    //     winch.write(180);
+    // } else if (ctl->y()) {
+    //     winch.write(0);
+    // } else {
+    //     winch.write(90);
+    // }
 
     // intake
     if (ctl->r1()) {
-        intake.write(180);
+        intake.move(100);
     } else if (ctl->r2()) {
-        intake.write(0);
+        intake.move(-100);
     } else {
-        intake.write(90);
+        intake.move(0);
     }
 
     // lift
-    if (ctl->l1()) {
-        liftPosition += 20;
-    } else if (ctl->l2()) {
-        liftPosition -= 20;
-    }
+    // if (ctl->l1()) {
+    //     liftPosition += 20;
+    // } else if (ctl->l2()) {
+    //     liftPosition -= 20;
+    // }
 
-    if (liftPosition > liftUpperBound) {
-        liftPosition = liftUpperBound;
-    } else if (liftPosition < liftLowerBound) {
-        liftPosition = liftLowerBound;
-    }
+    // if (liftPosition > liftUpperBound) {
+    //     liftPosition = liftUpperBound;
+    // } else if (liftPosition < liftLowerBound) {
+    //     liftPosition = liftLowerBound;
+    // }
 
-    lift.writeMicroseconds(liftPosition);
+    // lift.writeMicroseconds(liftPosition);
   
     // drive
-    int x = ctl->axisRX();
-    int y = ctl->axisY();
+    // int x = ctl->axisRX();
+    // int y = ctl->axisY();
 
-    if (abs(x) < 100) {
-        x = 0;
-    }
-    if (abs(y) < 100) {
-        y = 0;
-    }
+    // if (abs(x) < 100) {
+    //     x = 0;
+    // }
+    // if (abs(y) < 100) {
+    //     y = 0;
+    // }
 
-    x = map(x, 512, -512, -90, 90);
-    y = map(y, 512, -512, 0, 180);
+    // x = map(x, 512, -512, -90, 90);
+    // y = map(y, 512, -512, 0, 180);
 
-    Serial.print("X:");
-    Serial.print(x);
-    Serial.print("    Y:");
-    Serial.println(y);
+    // Serial.print("X:");
+    // Serial.print(x);
+    // Serial.print("    Y:");
+    // Serial.println(y);
     
     // Serial.println(liftPosition);
 
-    leftDrive.write(y-x);
-    rightDrive.write(map((y+x), 180, 0, 0, 180));
+    // leftDrive.write(y-x);
+    // rightDrive.write(map((y+x), 180, 0, 0, 180));
     
 
     // Another way to query controller data is by getting the buttons() function.
@@ -186,33 +179,20 @@ void processControllers() {
 
 // Arduino setup function. Runs in CPU 1
 void setup() {
-    pinMode(2, OUTPUT);
+    pinMode(ONBOARD_LED, OUTPUT);
 
-    pinMode(leftDrivePin, OUTPUT);
-    leftDrive.attach(leftDrivePin, 1000, 2000);
-    leftDrive.attach(leftDrivePin, 1000, 2000);
+    // motors
+    leftDrive.init(ESC1A);
+    rightDrive.init(ESC1B);
+    intake.init(ESC2A);
+    hang.init(ESC2B);
 
-    pinMode(rightDrivePin, OUTPUT);
-    rightDrive.attach(rightDrivePin, 1000, 2000);
-    rightDrive.attach(rightDrivePin, 1000, 2000);
-
-    pinMode(liftPin, OUTPUT);
-    lift.attach(liftPin, liftLowerBound, liftUpperBound);
-    lift.attach(liftPin, liftLowerBound, liftUpperBound);
-
-    pinMode(intakePin, OUTPUT);
-    intake.attach(intakePin, 1000, 2000);
-    intake.attach(intakePin, 1000, 2000);
-
-    pinMode(winchPin, OUTPUT);
-    winch.attach(winchPin, 1000, 2000);
-    winch.attach(winchPin, 1000, 2000);
+    // servos
+    descore.init(S1);
+    flipper.init(S2);
 
 
     Serial.begin(115200);
-    Serial.printf("Firmware: %s\n", BP32.firmwareVersion());
-    const uint8_t* addr = BP32.localBdAddress();
-    Serial.printf("BD Addr: %2X:%2X:%2X:%2X:%2X:%2X\n", addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 
     // Setup the Bluepad32 callbacks
     BP32.setup(&onConnectedController, &onDisconnectedController);
@@ -231,11 +211,10 @@ void setup() {
         BP32.forgetBluetoothKeys();
         BP32.enableNewBluetoothConnections(true);
         preferences.putBool("paired", true); // assume a controller was paired
-        digitalWrite(2, HIGH); // turn on the LED to let the user know we are in pairing mode
+        digitalWrite(ONBOARD_LED, HIGH); // turn on the LED to let the user know we are in pairing mode
     }
     preferences.end();
 }
-
 // Arduino loop function. Runs in CPU 1.
 void loop() {
 
