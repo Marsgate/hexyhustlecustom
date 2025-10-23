@@ -31,11 +31,18 @@ void driverControls() {
         intake.move(0);
     }
 
-    // lift
+    // descore
     if (ctl->l1()) {
         descore.moveRelative(20);
     } else if (ctl->l2()) {
         descore.moveRelative(-20);
+    }
+
+    // flipper
+    if (ctl->a()) {
+        flipper.moveRelative(20);
+    } else if (ctl->b()) {
+        flipper.moveRelative(-20);
     }
   
     // get joysticks
