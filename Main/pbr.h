@@ -16,14 +16,14 @@
 #define ESC3A 25
 #define ESC3B 33
 #define ESC4A 32
-#define ESC4B 35
+#define ESC4B 23
 
-#define S1 34
-#define S2 15
-#define S3 2
-#define S4 4
+#define S1 22
+#define S2 21
+#define S3 19
+#define S4 18
 #define S5 5
-#define S6 18
+#define S6 4
 
 #define ONBOARD_LED 2
 #define BOOT_BTN 0
