@@ -40,9 +40,9 @@ void driverControls() {
 
     // flipper
     if (ctl->a()) {
-        flipper.moveRelative(20);
+        flipper.moveAbsolute(SERVO_MICROS_MIN);
     } else if (ctl->b()) {
-        flipper.moveRelative(-20);
+        flipper.moveAbsolute(SERVO_MICROS_MAX);
     }
   
     // get joysticks
@@ -81,6 +81,7 @@ void setup() {
     // servos
     descore.init(S1);
     flipper.init(S2);
+    flipper.moveAbsolute(0);
 }
 
 void loop() {
