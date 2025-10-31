@@ -10,7 +10,12 @@ Motor hang;
 
 // servos
 ServoMotor descore;
+const int descoreMin = 700;
+const int descoreMax = 2050;
+
 ServoMotor flipper;
+const int flipperMin = 1200;
+const int flipperMax = 2500;
 
 void driverControls() {
     // hang
@@ -33,16 +38,16 @@ void driverControls() {
 
     // descore
     if (ctl->l2()) {
-        descore.moveAbsolute(2100);
+        descore.moveAbsolute(descoreMax);
     } else {
-        descore.moveAbsolute(1050);
+        descore.moveAbsolute(descoreMin);
     }
 
     // flipper
     if (ctl->l1()) {
-        flipper.moveAbsolute(1200);
+        flipper.moveAbsolute(flipperMin);
     } else {
-        flipper.moveAbsolute(SERVO_MICROS_MAX);
+        flipper.moveAbsolute(flipperMax);
     }
   
     // get joysticks
@@ -79,8 +84,8 @@ void setup() {
     hang.init(ESC2B);
 
     // servos
-    descore.init(S1, 1100, 2100, 1050);
-    flipper.init(S2, 1000, 2500, 2500);
+    descore.init(S1, descoreMin);
+    flipper.init(S2, flipperMax);
 }
 
 void loop() {
