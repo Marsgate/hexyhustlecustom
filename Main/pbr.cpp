@@ -1,20 +1,27 @@
 #include "pbr.h"
 
+int M1[2] = {14, 27};
+int M2[2] = {13, 12};
+int M3[2] = {33, 32};
+int M4[2] = {26, 25};
+int M5[2] = {21, 19};
+int M6[2] = {23, 22};
+
+int S1 = 16;
+int S2 = 17;
+int S3 = 5;
+int S4 = 18;
+
 // Motor
 void Motor::init(
-  int pin,
-  bool reversed,
-  int lowerLimit,
-  int upperLimit
+  int port[2],
+  bool reversed
 ) {
-  pinMode(pin, OUTPUT);
-  _lowerLimit = lowerLimit;
-  _upperLimit = upperLimit;
+  pinMode(port[0], OUTPUT);
+  pinMode(port[1], OUTPUT);
   _reversed = reversed;
-  
-  _servo.attach(pin, lowerLimit, upperLimit);
-  _servo.write(90);
-  delay(50);
+  _fwdPin = port[0];
+  _revPin = port[1];
 }
 
 void Motor::move(int speed) {
@@ -33,30 +40,30 @@ void Motor::move(int speed) {
   // save the speed to the object
   _speed = speed;
 
-  // convert to micros and write to the motor
-  speed = map(speed, -100, 100, MOTOR_MICROS_MIN, MOTOR_MICROS_MAX);
-  _servo.writeMicroseconds(speed);
+  // convert to PWM and write to the motor
+  speed = map(speed, -100, 100, -255, 255);
+  analogWrite(_fwdPin, speed);
+  analogWrite(_revPin, -speed);
 }
 
 int Motor::getSpeed() {
   return _speed;
 }
 
-
 // ServoMotor
 void ServoMotor::init(
-  int pin,
+  int port,
   int initialPosition,
   int lowerLimit,
   int upperLimit
 ) {
-  pinMode(pin, OUTPUT);
+  pinMode(port, OUTPUT);
   _lowerLimit = lowerLimit;
   _upperLimit = upperLimit;
 
   // double attatch due to a bug
-  _servo.attach(pin, lowerLimit, upperLimit);
-  _servo.attach(pin, lowerLimit, upperLimit);
+  _servo.attach(port, lowerLimit, upperLimit);
+  _servo.attach(port, lowerLimit, upperLimit);
 
   _servo.writeMicroseconds(initialPosition);
 }

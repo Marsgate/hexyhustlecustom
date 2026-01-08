@@ -64,7 +64,7 @@ void driverControls() {
 
     // map to +/- 100
     x = map(x, 512, -512, 100, -100);
-    y = map(y, 512, -512, -100, 100);
+    y = map(y, 512, -512, 100, -100);
 
     leftDrive.move(y-x);
     rightDrive.move(y+x);
@@ -75,13 +75,13 @@ void setup() {
     Serial.begin(115200);
 
     pbrInit();
-    BP32.enableBLEService(false); // set to true for BLE controllers (xbox)
+    BP32.enableBLEService(true); // set to true for BLE controllers (xbox)
 
     // motors
-    leftDrive.init(ESC1A, 1);
-    rightDrive.init(ESC1B); // reversed
-    intake.init(ESC2A);
-    hang.init(ESC2B);
+    leftDrive.init(M3, 1); // reversed
+    rightDrive.init(M5);
+    intake.init(M1);
+    hang.init(M4);
 
     // servos
     descore.init(S1, descoreMin);
@@ -103,7 +103,7 @@ void loop() {
         return; // if no controller is connected and returning data, skip the driver controls
     }
 
-    // dumpController() // uncomment to print controller inputs to the serial monitor
+    // dumpGamepad(ctl); // uncomment to print controller inputs to the serial monitor
 
     driverControls();
 }
